@@ -177,10 +177,12 @@ select {
 
 .kicker {
   margin: 0 0 0.35rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-size: 0.78rem;
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
   color: #fff4d4;
 }
 
@@ -442,6 +444,11 @@ select {
   gap: 0.35rem;
   font-weight: 800;
   color: var(--jungle);
+}
+
+.optional {
+  font-weight: 600;
+  color: var(--muted);
 }
 
 .input,

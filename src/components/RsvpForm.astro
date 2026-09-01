@@ -42,11 +42,11 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
 
     <label class="label" data-cantidad hidden>
       ¿Cuántos van a venir, contándote a vos?
-      <input class="input" name="cantidad" type="number" min="1" max="20" value="1" />
+      <input class="input" name="cantidad" type="number" min="1" max="20" value="1" disabled />
     </label>
 
     <label class="label">
-      ¿Querés dejarnos un recadito?
+      ¿Querés dejarnos un recadito? <span class="optional">(opcional)</span>
       <textarea class="textarea" name="comentario" maxlength="280" placeholder="Alergias, si llegan un ratito tarde, un beso…"></textarea>
     </label>
 
@@ -183,9 +183,12 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
         cantidadWrap.hidden = !isYes;
       }
       if (cantidadInput instanceof HTMLInputElement) {
+        cantidadInput.disabled = !isYes;
         cantidadInput.required = isYes;
         if (isNo) cantidadInput.value = "0";
-        else if (isYes && cantidadInput.value === "0") cantidadInput.value = "1";
+        else if (isYes && (cantidadInput.value === "0" || cantidadInput.value === "")) {
+          cantidadInput.value = "1";
+        }
       }
       if (submit instanceof HTMLButtonElement && !submit.disabled) {
         submit.textContent = isNo ? "Avisar que no voy a poder" : "¡Cuenten conmigo!";
