@@ -1,3 +1,189 @@
 ---
-return Astro.redirect("/giuliano");
+import { Picture } from "astro:assets";
+import foto1 from "../assets/giuliano/1.jpeg";
+import foto2 from "../assets/giuliano/2.jpeg";
+import foto4 from "../assets/giuliano/4.jpeg";
+import foto5 from "../assets/giuliano/5.jpeg";
+import foto6 from "../assets/giuliano/6.jpeg";
+import portada from "../assets/giuliano/portada.jpeg";
+import Countdown from "../components/Countdown.astro";
+import Divider from "../components/Divider.astro";
+import GalleryReveal from "../components/GalleryReveal.astro";
+import HeroReveal from "../components/HeroReveal.astro";
+import RsvpForm from "../components/RsvpForm.astro";
+import SavannahScene from "../components/SavannahScene.astro";
+import { event, pageDescription, pageTitle } from "../data/event";
+import Layout from "../layouts/Layout.astro";
+import "../styles/global.css";
+
+const photos = [
+  { src: foto4, alt: "Giuliano sonriendo en la montaña" },
+  { src: foto1, alt: "Giuliano con guantes de boxeo" },
+  { src: foto2, alt: "Giuliano recién nacido" },
+  { src: foto6, alt: "Giuliano con casco de juguete" },
+  { src: foto5, alt: "Giuliano en el cochecito" },
+];
+
+const galleryRows: typeof photos[] = [];
+for (let i = 0; i < photos.length; i++) {
+  const current = photos[i];
+  const wide = current.src.width > current.src.height;
+  const next = photos[i + 1];
+  const nextWide = next ? next.src.width > next.src.height : true;
+  if (!wide && next && !nextWide) {
+    galleryRows.push([current, next]);
+    i += 1;
+  } else {
+    galleryRows.push([current]);
+  }
+}
 ---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <script is:inline slot="head">
+    try {
+      const prev = JSON.parse(sessionStorage.getItem("giuliano-rsvp") || "null");
+      if (prev?.asiste === "si" || prev?.asiste === "no") {
+        document.documentElement.dataset.rsvp = prev.asiste;
+      }
+    } catch {}
+  </script>
+  <main class="page" id="contenido">
+    <header class="hero hero--pending" data-hero>
+      <div class="hero-photo">
+        <Picture
+          src={portada}
+          alt="Giuliano con corona y globo de 1 año"
+          formats={["avif", "webp"]}
+          widths={[480, 960]}
+          sizes="(max-width: 440px) 100vw, 440px"
+          quality={75}
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+      <div class="hero-overlay"></div>
+      <div class="hero-stars" aria-hidden="true"></div>
+      <div class="hero-scene">
+        <SavannahScene />
+      </div>
+      <div class="hero-copy">
+        <p class="kicker">{event.inviteLine}</p>
+        <h1>{event.honoree}</h1>
+        <p class="headline">{event.headline}</p>
+        <span class="badge">{event.ageLabel}</span>
+        <p class="pack">{event.packLine}</p>
+        <div class="hero-actions" data-invite-only>
+          <a class="btn btn-gold" href="#confirmar">Quiero estar en tu festejo</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="section" aria-labelledby="cuando" data-going-only>
+      <h2 class="section-title" id="cuando">{event.whenTitle}</h2>
+      <p class="lead" data-invite-only>{event.whenLead}</p>
+      <div class="card facts">
+        <div class="fact">
+          <div class="fact-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+              <path d="M3 10h18M8 3v4M16 3v4"></path>
+            </svg>
+          </div>
+          <div>
+            <b>{event.dateLabel}</b>
+            <span>Un martes para abrazarnos</span>
+          </div>
+        </div>
+        <div class="fact">
+          <div class="fact-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 7v5l3 2"></path>
+            </svg>
+          </div>
+          <div>
+            <b>{event.timeLabel}</b>
+            <span>De la tarde a la noche</span>
+          </div>
+        </div>
+        <div class="fact">
+          <div class="fact-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"></path>
+              <circle cx="12" cy="9" r="2.5"></circle>
+            </svg>
+          </div>
+          <div>
+            <b>{event.venue}</b>
+            <span>{event.address}</span>
+          </div>
+        </div>
+        <p class="hosts">{event.hostsLine}</p>
+      </div>
+    </section>
+
+    <Divider />
+
+    <section class="section gallery--pending" aria-labelledby="fotos" data-gallery>
+      <h2 class="section-title" id="fotos">{event.galleryTitle}</h2>
+      <div class="gallery">
+        {
+          galleryRows.map((row) => (
+            <div class:list={["gallery-row", row.length === 1 && "is-single"]}>
+              {row.map((foto) => (
+                <figure>
+                  <Picture
+                    src={foto.src}
+                    alt={foto.alt}
+                    formats={["avif", "webp"]}
+                    widths={[440, 880]}
+                    sizes="(max-width: 440px) 100vw, 220px"
+                    quality={70}
+                  />
+                </figure>
+              ))}
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="falta" data-going-only>
+      <h2 class="section-title" id="falta">{event.countdownTitle}</h2>
+      <Countdown startIso={event.startIso} endIso={event.endIso} />
+    </section>
+
+    <section class="section" aria-labelledby="llegar" data-invite-only>
+      <h2 class="section-title" id="llegar">{event.mapsTitle}</h2>
+      <p class="lead">{event.mapsLead}</p>
+      <div class="actions">
+        <a class="btn btn-leaf" href={event.mapsUrl} target="_blank" rel="noreferrer">Cómo llegar</a>
+      </div>
+    </section>
+
+    <Divider />
+
+    <section class="section" id="confirmar" aria-labelledby="rsvp">
+      <h2 class="section-title" id="rsvp">{event.rsvpTitle}</h2>
+      <p class="lead">{event.rsvpIntro}</p>
+      <RsvpForm
+        closesIso={event.rsvpClosesIso}
+        thanksYesTitle={event.thanksYesTitle}
+        thanksYes={event.thanksYes}
+        thanksNoTitle={event.thanksNoTitle}
+        thanksNo={event.thanksNo}
+        thanksDoneYes={event.thanksDoneYes}
+        thanksDoneNo={event.thanksDoneNo}
+        mapsUrl={event.mapsUrl}
+      />
+    </section>
+
+    <footer class="footer">
+      <p>{event.closing}</p>
+      <p class="brand">HolaInvitado</p>
+    </footer>
+    <HeroReveal />
+    <GalleryReveal />
+  </main>
+</Layout>

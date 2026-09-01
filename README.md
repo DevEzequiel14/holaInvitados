@@ -26,7 +26,7 @@ En local, si no hay webhook, las confirmaciones se guardan en `data/rsvps.json`.
    No uses el prefijo `PUBLIC_`: son secretos de servidor.
 
 4. En **Settings → General → Node.js Version** elegí **22.x**.
-5. Deploy. La invitación queda en `/giuliano` (`/` redirige ahí).
+5. Deploy. La invitación queda en la raíz (`https://holainvitados.vercel.app/`). `/giuliano` redirige ahí.
 6. Probá el RSVP en el deploy de Preview: tiene que aparecer una fila nueva en la hoja.
 
 En Vercel el archivo `data/rsvps.json` no persiste. Si falta el webhook, el formulario responde error en lugar de fingir que se guardó.

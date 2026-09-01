@@ -6,6 +6,9 @@ import { defineConfig, envField } from "astro/config";
 export default defineConfig({
   site: "https://holainvitados.vercel.app",
   adapter: vercel(),
+  redirects: {
+    "/giuliano": "/",
+  },
   env: {
     schema: {
       RSVP_SHEET_WEBHOOK: envField.string({
