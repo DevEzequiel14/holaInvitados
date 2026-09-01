@@ -1,13 +1,12 @@
+import { getSecret } from "astro:env/server";
 import { formatSheetRow, type Rsvp } from "./rsvp";
 
 export async function appendToSheet(row: Rsvp) {
-  const webhook = String(
-    import.meta.env.RSVP_SHEET_WEBHOOK ?? process.env.RSVP_SHEET_WEBHOOK ?? ""
-  ).trim();
+  const webhook = (getSecret("RSVP_SHEET_WEBHOOK") ?? "").trim();
   if (!webhook) return false;
 
   const payload = {
-    secret: String(import.meta.env.RSVP_SHEET_SECRET ?? process.env.RSVP_SHEET_SECRET ?? ""),
+    secret: getSecret("RSVP_SHEET_SECRET") ?? "",
     ...formatSheetRow(row),
   };
 

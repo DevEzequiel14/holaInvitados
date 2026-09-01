@@ -52,11 +52,19 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const savedToSheet = await appendToSheet(row);
-    try {
-      await appendLocal(row);
-    } catch (error) {
-      if (!savedToSheet) throw error;
-      console.warn("RSVP en Sheet, pero no se pudo guardar el backup local", error);
+    const persistOnDisk = !process.env.VERCEL;
+
+    if (!persistOnDisk) {
+      if (!savedToSheet) {
+        throw new Error("Falta RSVP_SHEET_WEBHOOK en Vercel");
+      }
+    } else {
+      try {
+        await appendLocal(row);
+      } catch (error) {
+        if (!savedToSheet) throw error;
+        console.warn("RSVP en Sheet, pero no se pudo guardar el backup local", error);
+      }
     }
   } catch (error) {
     console.error("No se pudo guardar el RSVP", error);

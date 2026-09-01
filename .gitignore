@@ -25,3 +25,4 @@ data/rsvps.json
 
 # jetbrains setting folder
 .idea/
+.vercel
