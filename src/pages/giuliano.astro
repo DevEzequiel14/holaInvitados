@@ -1,16 +1,44 @@
 ---
+import { Picture } from "astro:assets";
+import foto1 from "../assets/giuliano/1.jpeg";
+import foto2 from "../assets/giuliano/2.jpeg";
+import foto4 from "../assets/giuliano/4.jpeg";
+import foto5 from "../assets/giuliano/5.jpeg";
+import foto6 from "../assets/giuliano/6.jpeg";
+import portada from "../assets/giuliano/portada.jpeg";
 import Countdown from "../components/Countdown.astro";
 import Divider from "../components/Divider.astro";
 import RsvpForm from "../components/RsvpForm.astro";
 import SavannahScene from "../components/SavannahScene.astro";
-import { event, googleCalendarUrl, pageDescription, pageTitle } from "../data/event";
+import { event, pageDescription, pageTitle } from "../data/event";
 import Layout from "../layouts/Layout.astro";
 import "../styles/global.css";
+
+const gallery = [
+  { src: foto4, alt: "Giuliano sonriendo en la montaña" },
+  { src: foto1, alt: "Giuliano con guantes de boxeo" },
+  { src: foto2, alt: "Giuliano recién nacido" },
+  { src: foto6, alt: "Giuliano con casco de juguete" },
+  { src: foto5, alt: "Giuliano en el cochecito" },
+];
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
   <main class="page" id="contenido">
     <header class="hero">
+      <div class="hero-photo">
+        <Picture
+          src={portada}
+          alt="Giuliano con corona y globo de 1 año"
+          formats={["avif", "webp"]}
+          widths={[480, 960]}
+          sizes="(max-width: 440px) 100vw, 440px"
+          quality={75}
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+      <div class="hero-overlay"></div>
       <div class="hero-stars" aria-hidden="true"></div>
       <div class="hero-scene">
         <SavannahScene />
@@ -73,6 +101,26 @@ import "../styles/global.css";
 
     <Divider />
 
+    <section class="section" aria-labelledby="fotos">
+      <h2 class="section-title" id="fotos">{event.galleryTitle}</h2>
+      <div class="gallery">
+        {
+          gallery.map((foto) => (
+            <figure class={foto.src.width > foto.src.height ? "is-wide" : undefined}>
+              <Picture
+                src={foto.src}
+                alt={foto.alt}
+                formats={["avif", "webp"]}
+                widths={[440, 880]}
+                sizes="(max-width: 440px) 100vw, 220px"
+                quality={70}
+              />
+            </figure>
+          ))
+        }
+      </div>
+    </section>
+
     <section class="section" aria-labelledby="falta">
       <h2 class="section-title" id="falta">{event.countdownTitle}</h2>
       <Countdown startIso={event.startIso} endIso={event.endIso} />
@@ -83,9 +131,6 @@ import "../styles/global.css";
       <p class="lead">{event.mapsLead}</p>
       <div class="actions">
         <a class="btn btn-leaf" href={event.mapsUrl} target="_blank" rel="noreferrer">Cómo llegar</a>
-        <a class="btn btn-ghost" href={event.wazeUrl} target="_blank" rel="noreferrer">Abrir en Waze</a>
-        <a class="btn btn-ghost" href={googleCalendarUrl} target="_blank" rel="noreferrer">Guardar en el calendario</a>
-        <a class="btn btn-ghost" href={event.icsPath}>Llevarme este día al celular</a>
       </div>
     </section>
 
@@ -96,8 +141,11 @@ import "../styles/global.css";
       <p class="lead">{event.rsvpIntro}</p>
       <RsvpForm
         closesIso={event.rsvpClosesIso}
+        thanksYesTitle={event.thanksYesTitle}
         thanksYes={event.thanksYes}
+        thanksNoTitle={event.thanksNoTitle}
         thanksNo={event.thanksNo}
+        mapsUrl={event.mapsUrl}
       />
     </section>
 

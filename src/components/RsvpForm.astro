@@ -1,18 +1,23 @@
 ---
 interface Props {
   closesIso: string;
+  thanksYesTitle: string;
   thanksYes: string;
+  thanksNoTitle: string;
   thanksNo: string;
+  mapsUrl: string;
 }
 
-const { closesIso, thanksYes, thanksNo } = Astro.props;
+const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl } = Astro.props;
 ---
 
 <div
   class="card"
   data-rsvp
   data-closes={closesIso}
+  data-thanks-yes-title={thanksYesTitle}
   data-thanks-yes={thanksYes}
+  data-thanks-no-title={thanksNoTitle}
   data-thanks-no={thanksNo}
 >
   <form class="form" data-form>
@@ -35,8 +40,8 @@ const { closesIso, thanksYes, thanksNo } = Astro.props;
       </div>
     </fieldset>
 
-    <label class="label" data-cantidad>
-      ¿Cuántos van a ser?
+    <label class="label" data-cantidad hidden>
+      ¿Cuántos van a venir, contándote a vos?
       <input class="input" name="cantidad" type="number" min="1" max="20" value="1" />
     </label>
 
@@ -52,8 +57,13 @@ const { closesIso, thanksYes, thanksNo } = Astro.props;
   </form>
 
   <div class="thanks" data-thanks hidden>
-    <h2>¡Qué alegría!</h2>
+    <h2 data-thanks-title></h2>
     <p data-thanks-text></p>
+    <p class="thanks-recap" data-recap></p>
+    <div class="thanks-actions" data-yes-actions hidden>
+      <a class="btn btn-leaf" href={mapsUrl} target="_blank" rel="noreferrer">Cómo llegar</a>
+    </div>
+    <p class="thanks-note">Si cambia el plan, escríbanle a Selena o Martín.</p>
   </div>
 
   <p class="status" data-closed hidden>
@@ -62,36 +72,88 @@ const { closesIso, thanksYes, thanksNo } = Astro.props;
 </div>
 
 <script>
+  const STORAGE_KEY = "giuliano-rsvp";
+
   const root = document.querySelector("[data-rsvp]");
   if (root instanceof HTMLElement) {
     const form = root.querySelector("[data-form]");
     const thanks = root.querySelector("[data-thanks]");
+    const thanksTitle = root.querySelector("[data-thanks-title]");
     const thanksText = root.querySelector("[data-thanks-text]");
+    const recap = root.querySelector("[data-recap]");
+    const yesActions = root.querySelector("[data-yes-actions]");
     const closed = root.querySelector("[data-closed]");
     const status = root.querySelector("[data-status]");
     const cantidadWrap = root.querySelector("[data-cantidad]");
     const cantidadInput = root.querySelector('input[name="cantidad"]');
     const submit = root.querySelector('button[type="submit"]');
+    const section = root.closest("section");
+
+    const hideInviteCopy = () => {
+      section?.querySelector(".section-title")?.setAttribute("hidden", "");
+      section?.querySelector(".lead")?.setAttribute("hidden", "");
+    };
+
+    const showThanks = (asiste: string, nombre: string, cantidad: number) => {
+      const going = asiste === "si";
+      form?.setAttribute("hidden", "");
+      thanks?.removeAttribute("hidden");
+      hideInviteCopy();
+
+      if (thanksTitle) {
+        thanksTitle.textContent = going
+          ? (root.dataset.thanksYesTitle ?? "")
+          : (root.dataset.thanksNoTitle ?? "");
+      }
+      if (thanksText) {
+        thanksText.textContent = going ? (root.dataset.thanksYes ?? "") : (root.dataset.thanksNo ?? "");
+      }
+      if (recap) {
+        recap.textContent = going
+          ? `Anotamos a ${nombre}${cantidad > 1 ? `, ${cantidad} personas` : ""}.`
+          : `Anotamos que ${nombre} no va a poder estar.`;
+      }
+      if (going) yesActions?.removeAttribute("hidden");
+      else yesActions?.setAttribute("hidden", "");
+
+      thanks?.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
 
     const closes = new Date(root.dataset.closes ?? "").getTime();
-    if (Date.now() > closes) {
+    const saved = sessionStorage.getItem(STORAGE_KEY);
+
+    if (saved) {
+      try {
+        const prev = JSON.parse(saved) as { asiste: string; nombre: string; cantidad: number };
+        showThanks(prev.asiste, prev.nombre, prev.cantidad);
+      } catch {
+        sessionStorage.removeItem(STORAGE_KEY);
+      }
+    } else if (Date.now() > closes) {
       form?.setAttribute("hidden", "");
       closed?.removeAttribute("hidden");
     }
 
+    const syncAttendance = () => {
+      const going = root.querySelector('input[name="asiste"]:checked');
+      const isYes = going instanceof HTMLInputElement && going.value === "si";
+      const isNo = going instanceof HTMLInputElement && going.value === "no";
+
+      if (cantidadWrap instanceof HTMLElement) {
+        cantidadWrap.hidden = !isYes;
+      }
+      if (cantidadInput instanceof HTMLInputElement) {
+        cantidadInput.required = isYes;
+        if (isNo) cantidadInput.value = "0";
+        else if (isYes && cantidadInput.value === "0") cantidadInput.value = "1";
+      }
+      if (submit instanceof HTMLButtonElement && !submit.disabled) {
+        submit.textContent = isNo ? "Avisar que no voy a poder" : "¡Cuenten conmigo!";
+      }
+    };
+
     root.querySelectorAll('input[name="asiste"]').forEach((radio) => {
-      radio.addEventListener("change", () => {
-        const going = root.querySelector('input[name="asiste"]:checked');
-        const isNo = going instanceof HTMLInputElement && going.value === "no";
-        if (cantidadWrap instanceof HTMLElement) {
-          cantidadWrap.hidden = isNo;
-        }
-        if (cantidadInput instanceof HTMLInputElement) {
-          cantidadInput.required = !isNo;
-          if (isNo) cantidadInput.value = "0";
-          else if (cantidadInput.value === "0") cantidadInput.value = "1";
-        }
-      });
+      radio.addEventListener("change", syncAttendance);
     });
 
     form?.addEventListener("submit", async (event) => {
@@ -102,31 +164,32 @@ const { closesIso, thanksYes, thanksNo } = Astro.props;
 
       status.hidden = true;
       submit.disabled = true;
-      submit.textContent = "Enviando…";
+      submit.textContent = "Un segundo…";
+
+      const payload = new FormData(form);
+      const asiste = String(payload.get("asiste") ?? "");
+      const nombre = String(payload.get("nombre") ?? "").trim();
+      const cantidad = Number(payload.get("cantidad") ?? 0);
 
       try {
         const res = await fetch("/api/rsvp", {
           method: "POST",
-          body: new FormData(form),
+          body: payload,
         });
         const data = (await res.json()) as { ok?: boolean; error?: string };
         if (!res.ok || !data.ok) {
           throw new Error(data.error ?? "No se pudo guardar");
         }
 
-        const asiste = new FormData(form).get("asiste");
-        form.hidden = true;
-        thanks?.removeAttribute("hidden");
-        if (thanksText) {
-          thanksText.textContent =
-            asiste === "si" ? (root.dataset.thanksYes ?? "") : (root.dataset.thanksNo ?? "");
-        }
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ asiste, nombre, cantidad }));
+        showThanks(asiste, nombre, cantidad);
       } catch {
         status.hidden = false;
         status.className = "status err";
         status.textContent = "Uy, no se pudo enviar. ¿Probamos de nuevo en un ratito?";
         submit.disabled = false;
-        submit.textContent = "¡Cuenten conmigo!";
+        submit.textContent =
+          String(payload.get("asiste")) === "no" ? "Avisar que no voy a poder" : "¡Cuenten conmigo!";
       }
     });
   }
