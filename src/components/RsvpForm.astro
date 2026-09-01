@@ -21,39 +21,41 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
   data-thanks-no={thanksNo}
 >
   <form class="form" data-form>
-    <label class="label">
-      ¿Cómo te llamás?
-      <input class="input" name="nombre" type="text" required maxlength="80" autocomplete="name" />
-    </label>
+    <div class="form-fields" data-fields>
+      <label class="label">
+        ¿Cómo te llamás?
+        <input class="input" name="nombre" type="text" required maxlength="80" autocomplete="name" />
+      </label>
 
-    <fieldset class="label">
-      <legend>¿Nos vemos ese día?</legend>
-      <div class="choices">
-        <label class="choice">
-          <input type="radio" name="asiste" value="si" required />
-          Sí, voy
-        </label>
-        <label class="choice">
-          <input type="radio" name="asiste" value="no" />
-          No voy a poder
-        </label>
-      </div>
-    </fieldset>
+      <fieldset class="label">
+        <legend>¿Nos vemos ese día?</legend>
+        <div class="choices">
+          <label class="choice">
+            <input type="radio" name="asiste" value="si" required />
+            Sí, voy
+          </label>
+          <label class="choice">
+            <input type="radio" name="asiste" value="no" />
+            No voy a poder
+          </label>
+        </div>
+      </fieldset>
 
-    <label class="label" data-cantidad hidden>
-      ¿Cuántos van a venir, contándote a vos?
-      <input class="input" name="cantidad" type="number" min="1" max="20" value="1" disabled />
-    </label>
+      <label class="label" data-cantidad hidden>
+        ¿Cuántos van a venir, contándote a vos?
+        <input class="input" name="cantidad" type="number" min="1" max="20" value="1" disabled />
+      </label>
 
-    <label class="label">
-      ¿Querés dejarnos un recadito? <span class="optional">(opcional)</span>
-      <textarea class="textarea" name="comentario" maxlength="280" placeholder="Alergias, si llegan un ratito tarde, un beso…"></textarea>
-    </label>
+      <label class="label">
+        ¿Querés dejarnos un recadito? <span class="optional">(opcional)</span>
+        <textarea class="textarea" name="comentario" maxlength="280" placeholder="Alergias, si llegan un ratito tarde, un beso…"></textarea>
+      </label>
+    </div>
 
     <input class="hp" name="website" type="text" tabindex="-1" autocomplete="off" />
 
     <button class="btn btn-leaf" type="submit">¡Cuenten conmigo!</button>
-    <p class="status" data-status hidden></p>
+    <p class="status" data-status hidden aria-live="polite"></p>
   </form>
 
   <div class="thanks" data-thanks hidden>
@@ -93,7 +95,18 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
     const cantidadWrap = root.querySelector("[data-cantidad]");
     const cantidadInput = root.querySelector('input[name="cantidad"]');
     const submit = root.querySelector('button[type="submit"]');
+    const fields = root.querySelector("[data-fields]");
     const section = root.closest("section");
+
+    const lockForm = (busy: boolean) => {
+      if (form instanceof HTMLFormElement) {
+        form.classList.toggle("is-sending", busy);
+        form.setAttribute("aria-busy", busy ? "true" : "false");
+      }
+      if (fields instanceof HTMLElement) {
+        fields.inert = busy;
+      }
+    };
 
     const hideInviteCopy = () => {
       section?.querySelector(".section-title")?.setAttribute("hidden", "");
@@ -205,14 +218,15 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
       if (!(submit instanceof HTMLButtonElement)) return;
       if (!(status instanceof HTMLElement)) return;
 
-      status.hidden = true;
-      submit.disabled = true;
-      submit.textContent = "Un segundo…";
-
       const payload = new FormData(form);
       const asiste = String(payload.get("asiste") ?? "");
       const nombre = String(payload.get("nombre") ?? "").trim();
       const cantidad = Number(payload.get("cantidad") ?? 0);
+
+      status.hidden = true;
+      lockForm(true);
+      submit.disabled = true;
+      submit.textContent = "Un segundo…";
 
       try {
         const res = await fetch("/api/rsvp", {
@@ -227,6 +241,7 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ asiste, nombre, cantidad }));
         showThanks(asiste, nombre, cantidad, true);
       } catch {
+        lockForm(false);
         status.hidden = false;
         status.className = "status err";
         status.textContent = "Uy, no se pudo enviar. ¿Probamos de nuevo en un ratito?";

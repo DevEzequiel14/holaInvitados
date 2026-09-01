@@ -439,6 +439,20 @@ select {
   gap: 0.9rem;
 }
 
+.form-fields {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.form.is-sending {
+  cursor: wait;
+}
+
+.form.is-sending .form-fields {
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+
 .label {
   display: grid;
   gap: 0.35rem;
@@ -639,6 +653,10 @@ select {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .form.is-sending .form-fields {
+    transition: none;
   }
 
   .hero--pending .hero-photo,
