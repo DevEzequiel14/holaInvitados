@@ -1,0 +1,133 @@
+---
+interface Props {
+  closesIso: string;
+  thanksYes: string;
+  thanksNo: string;
+}
+
+const { closesIso, thanksYes, thanksNo } = Astro.props;
+---
+
+<div
+  class="card"
+  data-rsvp
+  data-closes={closesIso}
+  data-thanks-yes={thanksYes}
+  data-thanks-no={thanksNo}
+>
+  <form class="form" data-form>
+    <label class="label">
+      ¿Cómo te llamás?
+      <input class="input" name="nombre" type="text" required maxlength="80" autocomplete="name" />
+    </label>
+
+    <fieldset class="label">
+      <legend>¿Nos vemos ese día?</legend>
+      <div class="choices">
+        <label class="choice">
+          <input type="radio" name="asiste" value="si" required />
+          Sí, voy
+        </label>
+        <label class="choice">
+          <input type="radio" name="asiste" value="no" />
+          No voy a poder
+        </label>
+      </div>
+    </fieldset>
+
+    <label class="label" data-cantidad>
+      ¿Cuántos van a ser?
+      <input class="input" name="cantidad" type="number" min="1" max="20" value="1" />
+    </label>
+
+    <label class="label">
+      ¿Querés dejarnos un recadito?
+      <textarea class="textarea" name="comentario" maxlength="280" placeholder="Alergias, si llegan un ratito tarde, un beso…"></textarea>
+    </label>
+
+    <input class="hp" name="website" type="text" tabindex="-1" autocomplete="off" />
+
+    <button class="btn btn-leaf" type="submit">¡Cuenten conmigo!</button>
+    <p class="status" data-status hidden></p>
+  </form>
+
+  <div class="thanks" data-thanks hidden>
+    <h2>¡Qué alegría!</h2>
+    <p data-thanks-text></p>
+  </div>
+
+  <p class="status" data-closed hidden>
+    Ya cerramos las confirmaciones por acá. Si cambió algo, escríbanle a Selena o Martín: los quieren igual.
+  </p>
+</div>
+
+<script>
+  const root = document.querySelector("[data-rsvp]");
+  if (root instanceof HTMLElement) {
+    const form = root.querySelector("[data-form]");
+    const thanks = root.querySelector("[data-thanks]");
+    const thanksText = root.querySelector("[data-thanks-text]");
+    const closed = root.querySelector("[data-closed]");
+    const status = root.querySelector("[data-status]");
+    const cantidadWrap = root.querySelector("[data-cantidad]");
+    const cantidadInput = root.querySelector('input[name="cantidad"]');
+    const submit = root.querySelector('button[type="submit"]');
+
+    const closes = new Date(root.dataset.closes ?? "").getTime();
+    if (Date.now() > closes) {
+      form?.setAttribute("hidden", "");
+      closed?.removeAttribute("hidden");
+    }
+
+    root.querySelectorAll('input[name="asiste"]').forEach((radio) => {
+      radio.addEventListener("change", () => {
+        const going = root.querySelector('input[name="asiste"]:checked');
+        const isNo = going instanceof HTMLInputElement && going.value === "no";
+        if (cantidadWrap instanceof HTMLElement) {
+          cantidadWrap.hidden = isNo;
+        }
+        if (cantidadInput instanceof HTMLInputElement) {
+          cantidadInput.required = !isNo;
+          if (isNo) cantidadInput.value = "0";
+          else if (cantidadInput.value === "0") cantidadInput.value = "1";
+        }
+      });
+    });
+
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!(form instanceof HTMLFormElement)) return;
+      if (!(submit instanceof HTMLButtonElement)) return;
+      if (!(status instanceof HTMLElement)) return;
+
+      status.hidden = true;
+      submit.disabled = true;
+      submit.textContent = "Enviando…";
+
+      try {
+        const res = await fetch("/api/rsvp", {
+          method: "POST",
+          body: new FormData(form),
+        });
+        const data = (await res.json()) as { ok?: boolean; error?: string };
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error ?? "No se pudo guardar");
+        }
+
+        const asiste = new FormData(form).get("asiste");
+        form.hidden = true;
+        thanks?.removeAttribute("hidden");
+        if (thanksText) {
+          thanksText.textContent =
+            asiste === "si" ? (root.dataset.thanksYes ?? "") : (root.dataset.thanksNo ?? "");
+        }
+      } catch {
+        status.hidden = false;
+        status.className = "status err";
+        status.textContent = "Uy, no se pudo enviar. ¿Probamos de nuevo en un ratito?";
+        submit.disabled = false;
+        submit.textContent = "¡Cuenten conmigo!";
+      }
+    });
+  }
+</script>

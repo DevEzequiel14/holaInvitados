@@ -1,0 +1,109 @@
+---
+import Countdown from "../components/Countdown.astro";
+import Divider from "../components/Divider.astro";
+import RsvpForm from "../components/RsvpForm.astro";
+import SavannahScene from "../components/SavannahScene.astro";
+import { event, googleCalendarUrl, pageDescription, pageTitle } from "../data/event";
+import Layout from "../layouts/Layout.astro";
+import "../styles/global.css";
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <main class="page" id="contenido">
+    <header class="hero">
+      <div class="hero-stars" aria-hidden="true"></div>
+      <div class="hero-scene">
+        <SavannahScene />
+      </div>
+      <div class="hero-copy">
+        <p class="kicker">{event.inviteLine}</p>
+        <h1>{event.honoree}</h1>
+        <p class="headline">{event.headline}</p>
+        <span class="badge">{event.ageLabel}</span>
+        <p class="pack">{event.packLine}</p>
+        <div class="hero-actions">
+          <a class="btn btn-gold" href="#confirmar">Quiero estar en tu festejo</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="section" aria-labelledby="cuando">
+      <h2 class="section-title" id="cuando">{event.whenTitle}</h2>
+      <p class="lead">{event.whenLead}</p>
+      <div class="card facts">
+        <div class="fact">
+          <div class="fact-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+              <path d="M3 10h18M8 3v4M16 3v4"></path>
+            </svg>
+          </div>
+          <div>
+            <b>{event.dateLabel}</b>
+            <span>Un martes para abrazarnos</span>
+          </div>
+        </div>
+        <div class="fact">
+          <div class="fact-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 7v5l3 2"></path>
+            </svg>
+          </div>
+          <div>
+            <b>{event.timeLabel}</b>
+            <span>De la tarde a la noche</span>
+          </div>
+        </div>
+        <div class="fact">
+          <div class="fact-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"></path>
+              <circle cx="12" cy="9" r="2.5"></circle>
+            </svg>
+          </div>
+          <div>
+            <b>{event.venue}</b>
+            <span>{event.address}</span>
+          </div>
+        </div>
+        <p class="hosts">{event.hostsLine}</p>
+      </div>
+    </section>
+
+    <Divider />
+
+    <section class="section" aria-labelledby="falta">
+      <h2 class="section-title" id="falta">{event.countdownTitle}</h2>
+      <Countdown startIso={event.startIso} endIso={event.endIso} />
+    </section>
+
+    <section class="section" aria-labelledby="llegar">
+      <h2 class="section-title" id="llegar">{event.mapsTitle}</h2>
+      <p class="lead">{event.mapsLead}</p>
+      <div class="actions">
+        <a class="btn btn-leaf" href={event.mapsUrl} target="_blank" rel="noreferrer">Cómo llegar</a>
+        <a class="btn btn-ghost" href={event.wazeUrl} target="_blank" rel="noreferrer">Abrir en Waze</a>
+        <a class="btn btn-ghost" href={googleCalendarUrl} target="_blank" rel="noreferrer">Guardar en el calendario</a>
+        <a class="btn btn-ghost" href={event.icsPath}>Llevarme este día al celular</a>
+      </div>
+    </section>
+
+    <Divider />
+
+    <section class="section" id="confirmar" aria-labelledby="rsvp">
+      <h2 class="section-title" id="rsvp">{event.rsvpTitle}</h2>
+      <p class="lead">{event.rsvpIntro}</p>
+      <RsvpForm
+        closesIso={event.rsvpClosesIso}
+        thanksYes={event.thanksYes}
+        thanksNo={event.thanksNo}
+      />
+    </section>
+
+    <footer class="footer">
+      <p>{event.closing}</p>
+      <p class="brand">HolaInvitado</p>
+    </footer>
+  </main>
+</Layout>

@@ -1,0 +1,62 @@
+---
+interface Props {
+  startIso: string;
+  endIso: string;
+}
+
+const { startIso, endIso } = Astro.props;
+---
+
+<div class="card" data-countdown data-start={startIso} data-end={endIso}>
+  <div class="countdown" role="timer" aria-live="polite">
+    <div class="time-box"><strong data-d>0</strong><span>días</span></div>
+    <div class="time-box"><strong data-h>0</strong><span>horas</span></div>
+    <div class="time-box"><strong data-m>0</strong><span>min</span></div>
+    <div class="time-box"><strong data-s>0</strong><span>seg</span></div>
+  </div>
+  <p class="countdown-note" data-note>El corazón ya está contando los días</p>
+</div>
+
+<script>
+  const root = document.querySelector("[data-countdown]");
+  if (root instanceof HTMLElement) {
+    const start = new Date(root.dataset.start ?? "").getTime();
+    const end = new Date(root.dataset.end ?? "").getTime();
+    const dEl = root.querySelector("[data-d]");
+    const hEl = root.querySelector("[data-h]");
+    const mEl = root.querySelector("[data-m]");
+    const sEl = root.querySelector("[data-s]");
+    const note = root.querySelector("[data-note]");
+    const boxes = root.querySelector(".countdown");
+
+    const pad = (n: number) => String(Math.max(0, n)).padStart(2, "0");
+
+    const tick = () => {
+      const now = Date.now();
+      if (now >= end) {
+        if (boxes) boxes.setAttribute("hidden", "");
+        if (note) note.textContent = "Gracias por haber sido parte de este día tan lindo.";
+        return;
+      }
+      if (now >= start) {
+        if (boxes) boxes.setAttribute("hidden", "");
+        if (note) note.textContent = "¡Es hoy! Los estamos esperando con los brazos abiertos.";
+        return;
+      }
+
+      const diff = start - now;
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+
+      if (dEl) dEl.textContent = String(days);
+      if (hEl) hEl.textContent = pad(hours);
+      if (mEl) mEl.textContent = pad(mins);
+      if (sEl) sEl.textContent = pad(secs);
+    };
+
+    tick();
+    setInterval(tick, 1000);
+  }
+</script>
