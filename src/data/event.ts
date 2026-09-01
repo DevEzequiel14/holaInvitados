@@ -30,6 +30,8 @@ export const event = {
   thanksYes: "El 29 los recibimos con un abrazo enorme.",
   thanksNoTitle: "Gracias por avisarnos",
   thanksNo: "Los vamos a extrañar, pero igual los queremos un montón.",
+  thanksDoneYes: "Ya confirmaste. Podés cerrar esta pestaña cuando quieras.",
+  thanksDoneNo: "Ya nos avisaste. Podés cerrar esta pestaña cuando quieras.",
 } as const;
 
 export const pageTitle = `${event.firstName} — ${event.headline}`;

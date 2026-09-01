@@ -40,6 +40,14 @@ for (let i = 0; i < photos.length; i++) {
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
+  <script is:inline slot="head">
+    try {
+      const prev = JSON.parse(sessionStorage.getItem("giuliano-rsvp") || "null");
+      if (prev?.asiste === "si" || prev?.asiste === "no") {
+        document.documentElement.dataset.rsvp = prev.asiste;
+      }
+    } catch {}
+  </script>
   <main class="page" id="contenido">
     <header class="hero hero--pending" data-hero>
       <div class="hero-photo">
@@ -65,15 +73,15 @@ for (let i = 0; i < photos.length; i++) {
         <p class="headline">{event.headline}</p>
         <span class="badge">{event.ageLabel}</span>
         <p class="pack">{event.packLine}</p>
-        <div class="hero-actions">
+        <div class="hero-actions" data-invite-only>
           <a class="btn btn-gold" href="#confirmar">Quiero estar en tu festejo</a>
         </div>
       </div>
     </header>
 
-    <section class="section" aria-labelledby="cuando">
+    <section class="section" aria-labelledby="cuando" data-going-only>
       <h2 class="section-title" id="cuando">{event.whenTitle}</h2>
-      <p class="lead">{event.whenLead}</p>
+      <p class="lead" data-invite-only>{event.whenLead}</p>
       <div class="card facts">
         <div class="fact">
           <div class="fact-icon" aria-hidden="true">
@@ -141,12 +149,12 @@ for (let i = 0; i < photos.length; i++) {
       </div>
     </section>
 
-    <section class="section" aria-labelledby="falta">
+    <section class="section" aria-labelledby="falta" data-going-only>
       <h2 class="section-title" id="falta">{event.countdownTitle}</h2>
       <Countdown startIso={event.startIso} endIso={event.endIso} />
     </section>
 
-    <section class="section" aria-labelledby="llegar">
+    <section class="section" aria-labelledby="llegar" data-invite-only>
       <h2 class="section-title" id="llegar">{event.mapsTitle}</h2>
       <p class="lead">{event.mapsLead}</p>
       <div class="actions">
@@ -165,6 +173,8 @@ for (let i = 0; i < photos.length; i++) {
         thanksYes={event.thanksYes}
         thanksNoTitle={event.thanksNoTitle}
         thanksNo={event.thanksNo}
+        thanksDoneYes={event.thanksDoneYes}
+        thanksDoneNo={event.thanksDoneNo}
         mapsUrl={event.mapsUrl}
       />
     </section>

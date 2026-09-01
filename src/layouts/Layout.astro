@@ -26,6 +26,7 @@ const { title, description } = Astro.props;
       href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&family=Nunito:wght@400;600;700;800&display=swap"
       rel="stylesheet"
     />
+    <slot name="head" />
   </head>
   <body>
     <a class="skip" href="#contenido">Saltar al contenido</a>

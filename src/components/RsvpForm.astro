@@ -5,10 +5,13 @@ interface Props {
   thanksYes: string;
   thanksNoTitle: string;
   thanksNo: string;
+  thanksDoneYes: string;
+  thanksDoneNo: string;
   mapsUrl: string;
 }
 
-const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl } = Astro.props;
+const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, thanksDoneYes, thanksDoneNo, mapsUrl } =
+  Astro.props;
 ---
 
 <div
@@ -19,6 +22,8 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
   data-thanks-yes={thanksYes}
   data-thanks-no-title={thanksNoTitle}
   data-thanks-no={thanksNo}
+  data-thanks-done-yes={thanksDoneYes}
+  data-thanks-done-no={thanksDoneNo}
 >
   <form class="form" data-form>
     <div class="form-fields" data-fields>
@@ -66,6 +71,7 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
     <h2 data-thanks-title></h2>
     <p data-thanks-text></p>
     <p class="thanks-recap" data-recap></p>
+    <p class="thanks-done" data-thanks-done></p>
     <div class="thanks-actions" data-yes-actions hidden>
       <a class="btn btn-leaf" href={mapsUrl} target="_blank" rel="noreferrer">Cómo llegar</a>
     </div>
@@ -89,6 +95,7 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
     const thanksTitle = root.querySelector("[data-thanks-title]");
     const thanksText = root.querySelector("[data-thanks-text]");
     const recap = root.querySelector("[data-recap]");
+    const thanksDone = root.querySelector("[data-thanks-done]");
     const yesActions = root.querySelector("[data-yes-actions]");
     const closed = root.querySelector("[data-closed]");
     const status = root.querySelector("[data-status]");
@@ -108,6 +115,10 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
       }
     };
 
+    const setPageState = (asiste: string) => {
+      document.documentElement.dataset.rsvp = asiste === "si" ? "si" : "no";
+    };
+
     const hideInviteCopy = () => {
       section?.querySelector(".section-title")?.setAttribute("hidden", "");
       section?.querySelector(".lead")?.setAttribute("hidden", "");
@@ -118,6 +129,7 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
       form?.setAttribute("hidden", "");
       thanks?.removeAttribute("hidden");
       hideInviteCopy();
+      setPageState(asiste);
 
       if (thanksTitle) {
         thanksTitle.textContent = going
@@ -131,6 +143,11 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
         recap.textContent = going
           ? `Anotamos a ${nombre}${cantidad > 1 ? `, ${cantidad} personas` : ""}.`
           : `Anotamos que ${nombre} no va a poder estar.`;
+      }
+      if (thanksDone) {
+        thanksDone.textContent = going
+          ? (root.dataset.thanksDoneYes ?? "")
+          : (root.dataset.thanksDoneNo ?? "");
       }
       if (going) yesActions?.removeAttribute("hidden");
       else yesActions?.setAttribute("hidden", "");

@@ -223,6 +223,14 @@ select {
   margin-top: 1.4rem;
 }
 
+html[data-rsvp] [data-invite-only] {
+  display: none;
+}
+
+html[data-rsvp="no"] [data-going-only] {
+  display: none;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -588,6 +596,11 @@ select {
 }
 
 .thanks-recap {
+  font-weight: 700;
+  color: var(--jungle);
+}
+
+.thanks-done {
   font-weight: 700;
   color: var(--jungle);
 }
