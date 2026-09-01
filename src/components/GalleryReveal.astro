@@ -1,0 +1,49 @@
+---
+---
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  const gallery = document.querySelector("[data-gallery]");
+  if (gallery instanceof HTMLElement) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      gallery.classList.remove("gallery--pending");
+    } else {
+      gsap.registerPlugin(ScrollTrigger);
+
+      const title = gallery.querySelector(".section-title");
+      const rows = gallery.querySelectorAll(".gallery-row");
+
+      if (title) {
+        gsap.to(title, {
+          opacity: 1,
+          y: 0,
+          duration: 0.55,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: title,
+            start: "top 90%",
+            once: true,
+          },
+        });
+      }
+
+      rows.forEach((row) => {
+        const photos = row.querySelectorAll("figure");
+        gsap.to(photos, {
+          opacity: 1,
+          y: 0,
+          duration: 0.7,
+          ease: "power2.out",
+          stagger: photos.length > 1 ? 0.1 : 0,
+          scrollTrigger: {
+            trigger: row,
+            start: "top 88%",
+            once: true,
+          },
+        });
+      });
+    }
+  }
+</script>

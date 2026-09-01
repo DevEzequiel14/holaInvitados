@@ -57,6 +57,10 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
   </form>
 
   <div class="thanks" data-thanks hidden>
+    <div class="thanks-burst" data-burst aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
+    </div>
     <h2 data-thanks-title></h2>
     <p data-thanks-text></p>
     <p class="thanks-recap" data-recap></p>
@@ -72,6 +76,8 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
 </div>
 
 <script>
+  import gsap from "gsap";
+
   const STORAGE_KEY = "giuliano-rsvp";
 
   const root = document.querySelector("[data-rsvp]");
@@ -94,7 +100,7 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
       section?.querySelector(".lead")?.setAttribute("hidden", "");
     };
 
-    const showThanks = (asiste: string, nombre: string, cantidad: number) => {
+    const showThanks = (asiste: string, nombre: string, cantidad: number, animate = false) => {
       const going = asiste === "si";
       form?.setAttribute("hidden", "");
       thanks?.removeAttribute("hidden");
@@ -117,6 +123,40 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
       else yesActions?.setAttribute("hidden", "");
 
       thanks?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      if (animate && thanks instanceof HTMLElement) {
+        gsap.set(thanks, { opacity: 0 });
+        requestAnimationFrame(() => playConfirm(thanks, going));
+      }
+    };
+
+    const playConfirm = (card: HTMLElement, going: boolean) => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const burst = card.querySelectorAll("[data-burst] span");
+      gsap.fromTo(
+        card,
+        { opacity: 0, y: 18, scale: 0.97 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "power2.out" },
+      );
+
+      if (!going || burst.length === 0) return;
+
+      gsap.fromTo(
+        burst,
+        { opacity: 0, scale: 0, x: 0, y: 0 },
+        {
+          opacity: 1,
+          scale: 1,
+          x: () => gsap.utils.random(-52, 52),
+          y: () => gsap.utils.random(-46, -12),
+          rotation: () => gsap.utils.random(-40, 40),
+          duration: 0.7,
+          stagger: 0.035,
+          ease: "power2.out",
+        },
+      );
+      gsap.to(burst, { opacity: 0, duration: 0.45, delay: 0.75, ease: "power1.in" });
     };
 
     const closes = new Date(root.dataset.closes ?? "").getTime();
@@ -182,7 +222,7 @@ const { closesIso, thanksYesTitle, thanksYes, thanksNoTitle, thanksNo, mapsUrl }
         }
 
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ asiste, nombre, cantidad }));
-        showThanks(asiste, nombre, cantidad);
+        showThanks(asiste, nombre, cantidad, true);
       } catch {
         status.hidden = false;
         status.className = "status err";

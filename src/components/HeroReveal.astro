@@ -1,0 +1,45 @@
+---
+---
+
+<script>
+  import gsap from "gsap";
+
+  const hero = document.querySelector("[data-hero]");
+  if (hero instanceof HTMLElement) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      hero.classList.remove("hero--pending");
+    } else {
+      const photo = hero.querySelector(".hero-photo");
+      const overlay = hero.querySelector(".hero-overlay");
+      const scene = hero.querySelector(".hero-scene");
+      const lines = hero.querySelectorAll(".hero-copy > *");
+      const cta = hero.querySelector(".btn-gold");
+      const img = hero.querySelector(".hero-photo img");
+
+      const play = () => {
+        if (hero.dataset.heroPlayed) return;
+        hero.dataset.heroPlayed = "true";
+        gsap
+          .timeline({
+            defaults: { ease: "power2.out" },
+            onComplete: () => {
+              hero.classList.remove("hero--pending");
+              gsap.set([photo, overlay, scene, lines], { clearProps: "transform,opacity" });
+            },
+          })
+          .to(photo, { scale: 1, duration: 1.35 }, 0)
+          .to(overlay, { opacity: 1, duration: 1 }, 0.08)
+          .to(scene, { opacity: 1, y: 0, duration: 0.85 }, 0.28)
+          .to(lines, { opacity: 1, y: 0, duration: 0.65, stagger: 0.08 }, 0.32)
+          .add(() => cta?.classList.add("is-shine"), "-=0.15");
+      };
+
+      if (img instanceof HTMLImageElement && !img.complete) {
+        img.addEventListener("load", play, { once: true });
+        window.setTimeout(play, 1800);
+      } else {
+        play();
+      }
+    }
+  }
+</script>

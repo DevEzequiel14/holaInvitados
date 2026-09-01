@@ -8,24 +8,40 @@ import foto6 from "../assets/giuliano/6.jpeg";
 import portada from "../assets/giuliano/portada.jpeg";
 import Countdown from "../components/Countdown.astro";
 import Divider from "../components/Divider.astro";
+import GalleryReveal from "../components/GalleryReveal.astro";
+import HeroReveal from "../components/HeroReveal.astro";
 import RsvpForm from "../components/RsvpForm.astro";
 import SavannahScene from "../components/SavannahScene.astro";
 import { event, pageDescription, pageTitle } from "../data/event";
 import Layout from "../layouts/Layout.astro";
 import "../styles/global.css";
 
-const gallery = [
+const photos = [
   { src: foto4, alt: "Giuliano sonriendo en la montaña" },
   { src: foto1, alt: "Giuliano con guantes de boxeo" },
   { src: foto2, alt: "Giuliano recién nacido" },
   { src: foto6, alt: "Giuliano con casco de juguete" },
   { src: foto5, alt: "Giuliano en el cochecito" },
 ];
+
+const galleryRows: typeof photos[] = [];
+for (let i = 0; i < photos.length; i++) {
+  const current = photos[i];
+  const wide = current.src.width > current.src.height;
+  const next = photos[i + 1];
+  const nextWide = next ? next.src.width > next.src.height : true;
+  if (!wide && next && !nextWide) {
+    galleryRows.push([current, next]);
+    i += 1;
+  } else {
+    galleryRows.push([current]);
+  }
+}
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
   <main class="page" id="contenido">
-    <header class="hero">
+    <header class="hero hero--pending" data-hero>
       <div class="hero-photo">
         <Picture
           src={portada}
@@ -101,21 +117,25 @@ const gallery = [
 
     <Divider />
 
-    <section class="section" aria-labelledby="fotos">
+    <section class="section gallery--pending" aria-labelledby="fotos" data-gallery>
       <h2 class="section-title" id="fotos">{event.galleryTitle}</h2>
       <div class="gallery">
         {
-          gallery.map((foto) => (
-            <figure class={foto.src.width > foto.src.height ? "is-wide" : undefined}>
-              <Picture
-                src={foto.src}
-                alt={foto.alt}
-                formats={["avif", "webp"]}
-                widths={[440, 880]}
-                sizes="(max-width: 440px) 100vw, 220px"
-                quality={70}
-              />
-            </figure>
+          galleryRows.map((row) => (
+            <div class:list={["gallery-row", row.length === 1 && "is-single"]}>
+              {row.map((foto) => (
+                <figure>
+                  <Picture
+                    src={foto.src}
+                    alt={foto.alt}
+                    formats={["avif", "webp"]}
+                    widths={[440, 880]}
+                    sizes="(max-width: 440px) 100vw, 220px"
+                    quality={70}
+                  />
+                </figure>
+              ))}
+            </div>
           ))
         }
       </div>
@@ -153,5 +173,7 @@ const gallery = [
       <p>{event.closing}</p>
       <p class="brand">HolaInvitado</p>
     </footer>
+    <HeroReveal />
+    <GalleryReveal />
   </main>
 </Layout>

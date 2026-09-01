@@ -90,6 +90,7 @@ select {
   display: grid;
   color: var(--cream);
   background: var(--jungle);
+  overflow: hidden;
 }
 
 .hero-photo,
@@ -103,6 +104,7 @@ select {
 .hero-photo {
   position: relative;
   aspect-ratio: 3 / 4;
+  transform-origin: 50% 28%;
 }
 
 .hero-photo picture,
@@ -235,8 +237,30 @@ select {
 }
 
 .btn-gold {
+  position: relative;
+  overflow: hidden;
   background: var(--gold);
   color: var(--bark);
+}
+
+.btn-gold.is-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  animation: hero-shine 0.85s ease-out forwards;
+}
+
+@keyframes hero-shine {
+  to {
+    transform: translateX(120%);
+  }
 }
 
 .btn-gold:hover,
@@ -337,10 +361,20 @@ select {
 }
 
 .gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gallery-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
   align-items: start;
+}
+
+.gallery-row.is-single {
+  grid-template-columns: 1fr;
 }
 
 .gallery figure {
@@ -348,10 +382,6 @@ select {
   overflow: hidden;
   border-radius: 1rem;
   background: var(--jungle-deep);
-}
-
-.gallery figure.is-wide {
-  grid-column: 1 / -1;
 }
 
 .gallery picture,
@@ -487,9 +517,42 @@ select {
   color: var(--terracotta);
 }
 
+.card[data-rsvp] {
+  position: relative;
+  overflow: visible;
+}
+
 .thanks {
+  position: relative;
   text-align: center;
   padding: 0.35rem 0.2rem 0.15rem;
+}
+
+.thanks-burst {
+  position: absolute;
+  left: 50%;
+  top: 0.85rem;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.thanks-burst span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 0 70% 40% 70%;
+  background: var(--gold);
+  opacity: 0;
+}
+
+.thanks-burst span:nth-child(odd) {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--leaf);
 }
 
 .thanks h2 {
@@ -542,8 +605,47 @@ select {
   letter-spacing: 0.04em;
 }
 
+.hero--pending .hero-photo {
+  transform: scale(1.08);
+}
+
+.hero--pending .hero-overlay {
+  opacity: 0.42;
+}
+
+.hero--pending .hero-scene {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.hero--pending .hero-copy > * {
+  opacity: 0;
+  transform: translateY(1.35rem);
+}
+
+.gallery--pending .section-title,
+.gallery--pending .gallery-row figure {
+  opacity: 0;
+  transform: translateY(1.4rem);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .hero--pending .hero-photo,
+  .hero--pending .hero-overlay,
+  .hero--pending .hero-scene,
+  .hero--pending .hero-copy > *,
+  .gallery--pending .section-title,
+  .gallery--pending .gallery-row figure {
+    opacity: 1;
+    transform: none;
+  }
+
+  .btn-gold.is-shine::after {
+    animation: none;
+    display: none;
   }
 }
